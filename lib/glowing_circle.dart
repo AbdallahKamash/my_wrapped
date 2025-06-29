@@ -2,6 +2,7 @@
 
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:my_wrapped/var.dart';
 
 class GlowingMovingCircle extends StatefulWidget {
   final double size;
@@ -128,3 +129,54 @@ class _GlowingMovingCircleState extends State<GlowingMovingCircle> with SingleTi
     );
   }
 }
+
+
+class GlowingCircles extends StatefulWidget {
+  const GlowingCircles({super.key});
+
+  @override
+  State<GlowingCircles> createState() => _GlowingCirclesState();
+}
+
+class _GlowingCirclesState extends State<GlowingCircles> {
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final mediaQueryData = MediaQuery.of(context);
+    final newIsDarkMode = mediaQueryData.platformBrightness == Brightness.dark;
+    if (isDarkMode != newIsDarkMode) {
+      if (mounted) {
+        setState(() {
+          isDarkMode = newIsDarkMode;
+        });
+      } else {
+        isDarkMode = newIsDarkMode;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        GlowingMovingCircle(
+          color: (isDarkMode ? lightPurple : darkPurple),
+          size: 200,
+          speed: 120,
+        ),
+        GlowingMovingCircle(
+          color: (isDarkMode ? lightPurple : darkPurple),
+          size: 500,
+          speed: 50,
+        ),
+        GlowingMovingCircle(
+          color: (isDarkMode ? lightPurple : darkPurple),
+          size: 300,
+          speed: 30,
+        ),
+      ],
+    );
+  }
+}
+

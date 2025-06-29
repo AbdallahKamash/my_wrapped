@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1093064448625-ig4nk0o5cbon44vfnbp4tfum245gpper.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1093064448625-ig4nk0o5cbon44vfnbp4tfum245gpper</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1093064448625-ttsii8i6e3rc2m4df23l38g8a7nt0q9e.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCE3PodgSLOW_agDoH6J2U0JO4_MLCPmrE</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1093064448625</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.myWrapped</string>
+	<key>PROJECT_ID</key>
+	<string>my-wrapped-kmsh</string>
+	<key>STORAGE_BUCKET</key>
+	<string>my-wrapped-kmsh.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1093064448625:ios:a41a8520da1e6bb5a319d0</string>
+</dict>
+</plist>

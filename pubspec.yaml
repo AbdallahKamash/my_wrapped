@@ -37,10 +37,10 @@ dependencies:
   gyro_provider: ^0.1.0
   introduction_screen: ^3.1.17
   flutter_carousel_widget: ^3.1.0
-  firebase_auth: ^5.5.4
+  firebase_auth: 5.6.0
   firebase: ^9.0.3
-  firebase_core: ^3.13.1
-  cloud_firestore: ^5.6.8
+  firebase_core: ^3.14.0
+  cloud_firestore: 5.6.9
   google_sign_in: ^6.3.0
   intl: ^0.20.2
   connectivity_plus: ^6.1.4

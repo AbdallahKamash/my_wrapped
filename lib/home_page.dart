@@ -10,6 +10,23 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final mediaQueryData = MediaQuery.of(context);
+    final newIsDarkMode = mediaQueryData.platformBrightness == Brightness.dark;
+    if (isDarkMode != newIsDarkMode) {
+      if (mounted) {
+        setState(() {
+          isDarkMode = newIsDarkMode;
+        });
+      } else {
+        isDarkMode = newIsDarkMode;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = MediaQuery.of(context).size;
@@ -21,23 +38,10 @@ class _HomePageState extends State<HomePage> {
         color: isDarkMode ? darkPurple : lightPurple,
         child: Stack(
           children: [
-            GlowingMovingCircle(
-              color: isDarkMode ? lightPurple : darkPurple,
-              size: 200,
-              speed: 120,
-            ),
-            GlowingMovingCircle(
-              color: isDarkMode ? lightPurple : darkPurple,
-              size: 500,
-              speed: 50,
-            ),
-            GlowingMovingCircle(
-              color: isDarkMode ? lightPurple : darkPurple,
-              size: 300,
-              speed: 30,
-            ),
-            // ...your main content here...
-            const Center(child: Placeholder()),
+            GlowingCircles(),
+             Center(child: Container(
+               color: Colors.yellow,
+             )),
           ],
         ),
       ),
