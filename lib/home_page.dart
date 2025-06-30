@@ -39,9 +39,6 @@ class _HomePageState extends State<HomePage> {
         child: Stack(
           children: [
             GlowingCircles(),
-             Center(child: Container(
-               color: Colors.yellow,
-             )),
           ],
         ),
       ),

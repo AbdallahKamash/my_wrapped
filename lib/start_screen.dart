@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:my_wrapped/glowing_circle.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_wrapped/sign_in_up_form.dart';
 import 'package:my_wrapped/start_profile_page.dart';
 import 'package:my_wrapped/welcome_page.dart';

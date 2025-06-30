@@ -7,10 +7,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:my_wrapped/glowing_circle.dart';
+import 'package:my_wrapped/home_page.dart';
 import 'package:my_wrapped/start_screen.dart';
 import 'package:my_wrapped/var.dart';
-
-import 'home_page.dart';
 
 PageController startScreenPageController = PageController(initialPage: 0);
 
@@ -121,7 +120,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         return;
       }
 
-      final doc = await FirebaseFirestore.instance
+      doc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();

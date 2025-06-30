@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart'; // Import for Apple Sign-In
 
 // A service class to encapsulate all Firebase Authentication operations.
 class AuthService {
@@ -42,12 +43,47 @@ class AuthService {
       return null; // Indicates success
     } on FirebaseAuthException catch (e) {
       // Catch and handle Firebase-specific authentication errors.
-      print('Firebase Auth Error during Google Sign-In: ${e.code} - ${e.message}');
       return 'Google Sign-in failed: ${e.message}';
     } catch (e) {
       // Catch any other unexpected errors during the process.
-      print('Error during Google Sign-In: $e');
       return 'Sign-in failed: $e';
+    }
+  }
+
+  /// Handles Apple Sign-In.
+  ///
+  /// Returns a [String] error message if sign-in fails, otherwise returns `null` on success.
+  Future<String?> signInWithApple() async {
+    try {
+      // Request Apple ID credential
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      // Create a Firebase credential from the Apple ID credential
+      final authCredential = OAuthProvider('apple.com').credential(
+        idToken: credential.identityToken,
+        accessToken: credential.authorizationCode,
+      );
+
+      // Sign in to Firebase with the Apple credential
+      await _auth.signInWithCredential(authCredential);
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      // Handle Firebase authentication errors
+      return 'Apple Sign-in failed: ${e.message}';
+    } on SignInWithAppleException catch (e) {
+      // Handle specific Apple sign-in errors (e.g., user cancelled)
+      if (e.toString() == 'CANCELED') {
+        return 'Apple Sign-In cancelled by user.';
+      }
+      // Use e.toString() to get a descriptive message for SignInWithAppleException
+      return 'Apple Sign-in failed: ${e.toString()}'; // Generic Apple sign-in error
+    } catch (e) {
+      return e.toString(); // Catch any other exceptions
     }
   }
 
@@ -100,10 +136,8 @@ class AuthService {
         default:
           errorMessage = 'Sign-in failed: ${e.message}';
       }
-      print('Firebase Auth Error during Email Sign-In: ${e.code} - ${e.message}');
       return errorMessage;
     } catch (e) {
-      print('Error during Email Sign-In: $e');
       return 'An unexpected error occurred: $e';
     }
   }
@@ -149,10 +183,8 @@ class AuthService {
         default:
           errorMessage = 'Sign-up failed: ${e.message}';
       }
-      print('Firebase Auth Error during Email Sign-Up: ${e.code} - ${e.message}');
       return errorMessage;
     } catch (e) {
-      print('Error during Email Sign-Up: $e');
       return 'An unexpected error occurred: $e';
     }
   }
@@ -186,10 +218,8 @@ class AuthService {
         default:
           errorMessage = 'Failed to send reset email: ${e.message}';
       }
-      print('Firebase Auth Error sending password reset: ${e.code} - ${e.message}');
       return errorMessage;
     } catch (e) {
-      print('Error sending password reset: $e');
       return 'An unexpected error occurred: $e';
     }
   }
@@ -205,7 +235,6 @@ class AuthService {
       await _auth.signOut();
       return null; // Indicates success
     } catch (e) {
-      print('Error during sign out: $e');
       return 'Sign-out failed: $e';
     }
   }
