@@ -16,7 +16,7 @@ PageController startScreenPageController = PageController(initialPage: 0);
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  isIOS = Platform.isIOS; // Determine if the platform is iOS
+  isIOS = Platform.isIOS;
   runApp(const MyApp());
 }
 
@@ -32,38 +32,38 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   bool _loading = true;
   bool _noInternet = false;
 
-  // Define the SystemUiOverlayStyle here, and update it when brightness changes
-  // Initialize it with the current platform brightness
+  
+  
   SystemUiOverlayStyle _currentSystemUiOverlayStyle = _createSystemUiOverlayStyle(
     WidgetsBinding.instance.platformDispatcher.platformBrightness,
   );
 
-  /// Helper function to create the SystemUiOverlayStyle based on the given platform brightness.
-  /// This ensures status bar icons are dark in light mode and light in dark mode.
+  
+  
   static SystemUiOverlayStyle _createSystemUiOverlayStyle(Brightness platformBrightness) {
     if (platformBrightness == Brightness.dark) {
-      // For dark mode:
-      // statusBarColor: Sets the background color of the status bar (Android).
-      // statusBarIconBrightness: Controls the color of status bar icons (e.g., Wi-Fi, battery) on Android.
-      //   Brightness.light makes icons light (e.g., white).
-      // statusBarBrightness: Controls the color of status bar text/icons on iOS.
-      //   Brightness.dark means the content *below* the status bar is dark, so iOS icons should be light.
+      
+      
+      
+      
+      
+      
       return const SystemUiOverlayStyle(
-        statusBarColor: Colors.black, // Dark background for status bar
-        statusBarIconBrightness: Brightness.light, // Light icons for Android
-        statusBarBrightness: Brightness.dark,      // Light icons for iOS
+        statusBarColor: Colors.black, 
+        statusBarIconBrightness: Brightness.light, 
+        statusBarBrightness: Brightness.dark,      
       );
     } else {
-      // For light mode:
-      // statusBarColor: Sets the background color of the status bar (Android).
-      // statusBarIconBrightness: Controls the color of status bar icons on Android.
-      //   Brightness.dark makes icons dark (e.g., black).
-      // statusBarBrightness: Controls the color of status bar text/icons on iOS.
-      //   Brightness.light means the content *below* the status bar is light, so iOS icons should be dark.
+      
+      
+      
+      
+      
+      
       return const SystemUiOverlayStyle(
-        statusBarColor: Colors.white, // Light background for status bar
-        statusBarIconBrightness: Brightness.dark,  // Dark icons for Android
-        statusBarBrightness: Brightness.light,     // Dark icons for iOS
+        statusBarColor: Colors.white, 
+        statusBarIconBrightness: Brightness.dark,  
+        statusBarBrightness: Brightness.light,     
       );
     }
   }
@@ -71,23 +71,23 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    // Add this observer to listen for platform brightness changes
+    
     WidgetsBinding.instance.addObserver(this);
     _initApp();
-    // The initial status bar color will be set by AnnotatedRegion in build method.
+    
   }
 
   @override
   void dispose() {
-    // Remove the observer when the widget is disposed
+    
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangePlatformBrightness() {
-    // This method is called when the platform's brightness changes (e.g., dark mode enabled/disabled)
-    // Update the state variable to trigger a rebuild and apply the new style via AnnotatedRegion.
+    
+    
     setState(() {
       _currentSystemUiOverlayStyle = _createSystemUiOverlayStyle(
         WidgetsBinding.instance.platformDispatcher.platformBrightness,
@@ -138,7 +138,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         });
       }
     } catch (e) {
-      // Catch any errors during Firebase operations, likely network-related
+      
       setState(() {
         _noInternet = true;
         _loading = false;
@@ -152,12 +152,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         WidgetsBinding.instance.platformDispatcher.views.first);
     final newIsDarkMode = mediaQueryData.platformBrightness == Brightness.dark;
 
-    // Update isDarkMode global variable if it has changed
+    
     if (isDarkMode != newIsDarkMode) {
       isDarkMode = newIsDarkMode;
-      // When isDarkMode changes, update the style for AnnotatedRegion
-      // This will trigger a rebuild and apply the new style.
-      setState(() { // Use setState to ensure the widget rebuilds and AnnotatedRegion updates
+      
+      
+      setState(() { 
         _currentSystemUiOverlayStyle = _createSystemUiOverlayStyle(
           mediaQueryData.platformBrightness,
         );
@@ -167,7 +167,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     final s = mediaQueryData.size;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: _currentSystemUiOverlayStyle, // Apply the determined style
+      value: _currentSystemUiOverlayStyle, 
       child: MaterialApp(
         title: 'My Wrapped App',
         theme: ThemeData(
@@ -176,17 +176,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         debugShowCheckedModeBanner: false,
         home: _loading
             ? Scaffold(
-          backgroundColor: Colors.black, // Fallback background
+          backgroundColor: Colors.black, 
           body: Container(
             width: s.width,
             height: s.height,
-            color: isDarkMode ? darkPurple : lightPurple, // App background color
+            color: isDarkMode ? darkPurple : lightPurple, 
             child: Stack(
               children: [
-                const GlowingCircles(), // Your custom glowing circles widget
+                const GlowingCircles(), 
                 Center(
                     child: CircularProgressIndicator(
-                      color: isDarkMode ? lightPurple : darkPurple, // Progress indicator color
+                      color: isDarkMode ? lightPurple : darkPurple, 
                     ))
               ],
             ),
@@ -194,20 +194,20 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         )
             : _noInternet
             ? Scaffold(
-          backgroundColor: Colors.black, // Fallback background
+          backgroundColor: Colors.black, 
           body: Container(
             width: s.width,
             height: s.height,
-            color: isDarkMode ? darkPurple : lightPurple, // App background color
+            color: isDarkMode ? darkPurple : lightPurple, 
             child: Stack(
               children: [
-                const GlowingCircles(), // Your custom glowing circles widget
+                const GlowingCircles(), 
                 Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.wifi_off,
-                          size: 60, color: Colors.grey), // No internet icon
+                          size: 60, color: Colors.grey), 
                       const SizedBox(height: 20),
                       Text(
                         'No Internet Connection',
@@ -226,7 +226,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                           foregroundColor:
                           isDarkMode ? darkPurple : lightPurple,
                         ),
-                        onPressed: _initApp, // Retry button
+                        onPressed: _initApp, 
                         child: const Text('Retry'),
                       ),
                     ],
@@ -236,7 +236,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             ),
           ),
         )
-            : _home, // Display home screen or start screen
+            : _home, 
       ),
     );
   }

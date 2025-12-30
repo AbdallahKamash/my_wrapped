@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_wrapped/var.dart'; // Assuming this contains `isDarkMode`, `lightPurple`, `darkPurple`
+import 'package:my_wrapped/var.dart'; 
 
 class AuthForm extends StatelessWidget {
   final TextEditingController emailController;
@@ -23,9 +23,9 @@ class AuthForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final s = MediaQuery.of(context).size; // Get screen size for responsive design
+    final s = MediaQuery.of(context).size; 
 
-    return AutofillGroup( // Added AutofillGroup for password manager
+    return AutofillGroup( 
       child: Form(
         key: formKey,
         child: Column(
@@ -35,7 +35,7 @@ class AuthForm extends StatelessWidget {
               child: TextFormField(
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
-                autofillHints: const [AutofillHints.email], // Autofill hint
+                autofillHints: const [AutofillHints.email], 
                 decoration: InputDecoration(
                   labelText: 'Email',
                   labelStyle: TextStyle(color: isDarkMode ? lightPurple : darkPurple),
@@ -74,7 +74,7 @@ class AuthForm extends StatelessWidget {
               child: TextFormField(
                 controller: passwordController,
                 obscureText: true,
-                autofillHints: const [AutofillHints.password, AutofillHints.newPassword], // Autofill hints
+                autofillHints: const [AutofillHints.password, AutofillHints.newPassword], 
                 decoration: InputDecoration(
                   labelText: 'Password',
                   labelStyle: TextStyle(color: isDarkMode ? lightPurple : darkPurple),
@@ -100,7 +100,7 @@ class AuthForm extends StatelessWidget {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
                   }
-                  if (value.length < 8) { // Minimum 8 characters
+                  if (value.length < 8) { 
                     return 'Password must be at least 8 characters.';
                   }
                   if (!value.contains(RegExp(r'[A-Z]'))) {

@@ -58,40 +58,71 @@ class _StartProfilePageState extends State<StartProfilePage> {
     );
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _authService = AuthService(FirebaseAuth.instance);
+    _user = FirebaseAuth.instance.currentUser;
+  }
+
   Future<void> _saveProfile() async {
     if (!(_profileFormKey.currentState?.validate() ?? false)) return;
     setState(() => _isLoading = true);
-    await FirebaseFirestore.instance.collection('users').doc(_user!.uid).set({
-      'name': _nameController.text.trim(),
-      'birthday': _birthday?.toIso8601String(),
-      'email': _user!.email,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-    setState(() => _isLoading = false);
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(1.0, 0.0);
-            const end = Offset.zero;
-            const curve = Curves.easeInOutCubicEmphasized;
+    try {
+      final uid = _user?.uid;
+      if (uid == null) throw Exception('No authenticated user');
 
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+      final docRef = FirebaseFirestore.instance.collection('users').doc(uid);
+      final doc = await docRef.get();
 
-            return SlideTransition(
-              position: animation.drive(tween),
-              child: child,
-            );
-          },
-        ),
-      );
+      if (!doc.exists) {
+        await docRef.set({
+          'name': _nameController.text.trim(),
+          'birthday': _birthday?.toIso8601String(),
+          'email': _user!.email,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        await docRef.set({
+          'name': _nameController.text.trim(),
+          'birthday': _birthday?.toIso8601String(),
+          'email': _user!.email,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOutCubicEmphasized;
+
+              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                position: animation.drive(tween),
+                child: child,
+              );
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to save profile.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final s = MediaQuery.of(context).size;
 
     final DateTime today = DateTime.now();
     final DateTime eighteenYearsAgo =

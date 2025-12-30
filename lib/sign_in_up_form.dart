@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:my_wrapped/var.dart'; // Assuming this defines isIOS, startScreenPageController, lightPurple, darkPurple
+import 'package:my_wrapped/var.dart'; 
 
-import 'auth_form.dart'; // Assuming this is your custom AuthForm widget
+import 'auth_form.dart'; 
 import 'auth_service.dart';
-import 'home_page.dart'; // Assuming this is your custom AuthService
+import 'home_page.dart'; 
 
 class SignInUpForm extends StatefulWidget {
   const SignInUpForm({super.key});
@@ -26,7 +26,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
   void initState() {
     super.initState();
     _authService = AuthService(FirebaseAuth.instance);
-    // Listen to authentication state changes to update the UI
+    
     _authService.authStateChanges().listen((User? user) {
       if (mounted) {
         setState(() {
@@ -34,18 +34,18 @@ class _SignInUpFormState extends State<SignInUpForm> {
         });
       }
     });
-    // Add listener for page changes to clear form fields
+    
     startScreenPageController.addListener(_handlePageChange);
   }
 
-  // Handles page changes in the PageController to clear form fields
+  
   void _handlePageChange() {
     if (!mounted) return;
     if (startScreenPageController.hasClients) {
       final currentPage = startScreenPageController.page?.round() ?? 0;
-      // If navigating away from the sign-in/up page (assuming it's page 1)
+      
       if (currentPage != 1) {
-        FocusScope.of(context).unfocus(); // Dismiss keyboard
+        FocusScope.of(context).unfocus(); 
         _emailController.clear();
         _passwordController.clear();
       }
@@ -54,7 +54,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
 
   @override
   void dispose() {
-    // Remove the listener to prevent memory leaks
+    
     startScreenPageController.removeListener(_handlePageChange);
     _emailController.dispose();
     _passwordController.dispose();
@@ -64,7 +64,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Update dark mode status based on system theme
+    
     final mediaQueryData = MediaQuery.of(context);
     final newIsDarkMode = mediaQueryData.platformBrightness == Brightness.dark;
     if (isDarkMode != newIsDarkMode) {
@@ -73,12 +73,12 @@ class _SignInUpFormState extends State<SignInUpForm> {
           isDarkMode = newIsDarkMode;
         });
       } else {
-        isDarkMode = newIsDarkMode; // Update without rebuilding if not mounted
+        isDarkMode = newIsDarkMode; 
       }
     }
   }
 
-  // Helper function to show a SnackBar message
+  
   void _showSnackBar(String message, {SnackBarAction? action}) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -97,7 +97,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Back button to navigate to the previous page
+            
             Container(
               padding: EdgeInsets.fromLTRB(
                   20, mediaQueryData.padding.top + 40, 0, 0),
@@ -114,7 +114,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
                     size: 20,
                   )),
             ),
-            SizedBox(height: s.height * 0.3), // Spacer
+            SizedBox(height: s.height * 0.3), 
             SizedBox(
               width: s.width,
               child: Column(
@@ -123,11 +123,11 @@ class _SignInUpFormState extends State<SignInUpForm> {
                 children: [
                   Column(
                     children: [
-                      // Google Sign-In Button (Visible when not iOS)
+                      
                       if (!isIOS)
                         ElevatedButton.icon(
                           onPressed: _isLoading
-                              ? null // Disable button if loading
+                              ? null 
                               : () async {
                                   setState(() {
                                     _isLoading = true;
@@ -140,14 +140,14 @@ class _SignInUpFormState extends State<SignInUpForm> {
                                     });
                                     _showSnackBar(error);
                                   } else {
-                                    // Check if user document exists in Firestore
+                                    
                                     if (_user == null) return;
                                     final doc = await FirebaseFirestore.instance
                                         .collection('users')
                                         .doc(_user!.uid)
                                         .get();
                                     if (!doc.exists) {
-                                      // If user document doesn't exist, navigate to next page (e.g., profile setup)
+                                      
                                       if (mounted) {
                                         startScreenPageController.nextPage(
                                           duration: const Duration(
@@ -157,7 +157,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
                                         );
                                       }
                                     } else {
-                                      // User document exists, proceed to main app (or whatever is next)
+                                      
                                     }
                                     setState(() {
                                       _isLoading = false;
@@ -169,7 +169,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
                             height: 24.0,
                             width: 24.0,
                             errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.person), // Fallback icon
+                                const Icon(Icons.person), 
                           ),
                           label: const Text(
                             'Sign in with Google',
@@ -192,11 +192,11 @@ class _SignInUpFormState extends State<SignInUpForm> {
                             elevation: 3,
                           ),
                         ),
-                      // Apple Sign-In Button (Visible only on iOS)
+                      
                       if (isIOS)
                         ElevatedButton.icon(
                           onPressed: _isLoading
-                              ? null // Disable button if loading
+                              ? null 
                               : () async {
                                   setState(() {
                                     _isLoading = true;
@@ -209,14 +209,14 @@ class _SignInUpFormState extends State<SignInUpForm> {
                                     });
                                     _showSnackBar(error);
                                   } else {
-                                    // Check if user document exists in Firestore
+                                    
                                     if (_user == null) return;
                                     final doc = await FirebaseFirestore.instance
                                         .collection('users')
                                         .doc(_user!.uid)
                                         .get();
                                     if (!doc.exists) {
-                                      // If user document doesn't exist, navigate to next page
+                                      
                                       if (mounted) {
                                         startScreenPageController.nextPage(
                                           duration: const Duration(
@@ -226,7 +226,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
                                         );
                                       }
                                     } else {
-                                      // User document exists, proceed to main app
+                                      
                                     }
                                     setState(() {
                                       _isLoading = false;
@@ -234,9 +234,9 @@ class _SignInUpFormState extends State<SignInUpForm> {
                                   }
                                 },
                           icon: Icon(
-                            Icons.apple, // Apple icon
+                            Icons.apple, 
                             color: isDarkMode ? darkPurple : lightPurple,
-                            size: 25, // Icon color for dark background
+                            size: 25, 
                           ),
                           label: Text(
                             'Sign in with Apple',
@@ -260,7 +260,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
                           ),
                         ),
                       const SizedBox(height: 20),
-                      // "OR" text, hidden if only Apple sign-in is shown
+                      
                       Text(
                         'OR',
                         style: TextStyle(
@@ -269,7 +269,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // Email/Password Authentication Form
+                      
                       AuthForm(
                         emailController: _emailController,
                         passwordController: _passwordController,
@@ -303,6 +303,7 @@ class _SignInUpFormState extends State<SignInUpForm> {
                               setState(() {
                                 _isLoading = false;
                               });
+                              print(error);
                               _showSnackBar(error);
                             } else {
                               if (_user == null) return;

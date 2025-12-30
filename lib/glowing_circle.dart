@@ -1,4 +1,4 @@
-// glowing_moving_circle.dart
+
 
 import 'dart:math';
 import 'package:flutter/material.dart';
@@ -56,9 +56,9 @@ class _GlowingMovingCircleState extends State<GlowingMovingCircle> with SingleTi
     screenWidth = constraints.maxWidth;
     screenHeight = constraints.maxHeight;
 
-    // Start the circle slightly outside the screen area (a little extra space)
-    x = (screenWidth - widget.size) / 2; // Adjust starting position to allow out-of-screen
-    y = (screenHeight - widget.size) / 2; // Same for vertical axis
+    
+    x = (screenWidth - widget.size) / 2; 
+    y = (screenHeight - widget.size) / 2; 
     isInitialized = true;
   }
 
@@ -75,7 +75,7 @@ class _GlowingMovingCircleState extends State<GlowingMovingCircle> with SingleTi
       x += dx * widget.speed * dt;
       y += dy * widget.speed * dt;
 
-      // Allow the circle to go outside the visible area slightly
+      
       if (x <= -widget.size || x >= screenWidth + widget.size) {
         dx *= -1;
         x = x.clamp(-widget.size, screenWidth + widget.size);

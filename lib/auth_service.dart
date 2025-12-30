@@ -1,61 +1,58 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart'; // Import for Apple Sign-In
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
-// A service class to encapsulate all Firebase Authentication operations.
 class AuthService {
-  // FirebaseAuth instance to interact with Firebase Authentication services.
   final FirebaseAuth _auth;
-  // GoogleSignIn instance to handle the Google Sign-In flow.
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  bool _isGoogleInitialized = false;
 
-  // Constructor requires a FirebaseAuth instance.
   AuthService(this._auth);
 
-  // Provides a stream of the current authentication state changes.
-  // Useful for automatically updating UI when a user signs in or out.
   Stream<User?> authStateChanges() => _auth.authStateChanges();
 
-  /// Handles Google Sign-In.
-  ///
-  /// Returns a [String] error message if sign-in fails, otherwise returns `null` on success.
-  Future<String?> signInWithGoogle() async {
-    try {
-      // Initiate the Google Sign-In process.
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-
-      // If the user cancels the sign-in, googleUser will be null.
-      if (googleUser == null) {
-        return 'Google Sign-in cancelled.';
-      }
-
-      // Obtain authentication details from the Google user.
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      // Create a Firebase credential using Google's ID token and access token.
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Sign in to Firebase with the Google credential.
-      await _auth.signInWithCredential(credential);
-      return null; // Indicates success
-    } on FirebaseAuthException catch (e) {
-      // Catch and handle Firebase-specific authentication errors.
-      return 'Google Sign-in failed: ${e.message}';
-    } catch (e) {
-      // Catch any other unexpected errors during the process.
-      return 'Sign-in failed: $e';
+  Future<void> _ensureGoogleInitialized() async {
+    if (!_isGoogleInitialized) {
+      await _googleSignIn.initialize();
+      _isGoogleInitialized = true;
     }
   }
 
-  /// Handles Apple Sign-In.
-  ///
-  /// Returns a [String] error message if sign-in fails, otherwise returns `null` on success.
+  Future<String?> signInWithGoogle() async {
+    try {
+      await _ensureGoogleInitialized();
+
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
+
+      final String? idToken = googleUser.authentication.idToken;
+
+      final List<String> scopes = ['email', 'profile', 'openid'];
+      final GoogleSignInClientAuthorization authorization =
+          await googleUser.authorizationClient.authorizeScopes(scopes);
+
+      final String accessToken = authorization.accessToken;
+
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: accessToken,
+        idToken: idToken,
+      );
+
+      await _auth.signInWithCredential(credential);
+      return null;
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return 'Google Sign-in cancelled.';
+      }
+      return 'Google Sign-in failed: ${e.description}';
+    } on FirebaseAuthException catch (e) {
+      return e.message;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   Future<String?> signInWithApple() async {
     try {
-      // Request Apple ID credential
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
@@ -63,179 +60,112 @@ class AuthService {
         ],
       );
 
-      // Create a Firebase credential from the Apple ID credential
       final authCredential = OAuthProvider('apple.com').credential(
         idToken: credential.identityToken,
         accessToken: credential.authorizationCode,
       );
 
-      // Sign in to Firebase with the Apple credential
       await _auth.signInWithCredential(authCredential);
-      return null; // Success
+      return null;
     } on FirebaseAuthException catch (e) {
-      // Handle Firebase authentication errors
-      return 'Apple Sign-in failed: ${e.message}';
+      return e.message;
     } on SignInWithAppleException catch (e) {
-      // Handle specific Apple sign-in errors (e.g., user cancelled)
-      if (e.toString() == 'CANCELED') {
+      if (e.toString().contains('CANCELED')) {
         return 'Apple Sign-In cancelled by user.';
       }
-      // Use e.toString() to get a descriptive message for SignInWithAppleException
-      return 'Apple Sign-in failed: ${e.toString()}'; // Generic Apple sign-in error
+      return e.toString();
     } catch (e) {
-      return e.toString(); // Catch any other exceptions
+      return e.toString();
     }
   }
 
-  /// Handles email and password sign-in.
-  ///
-  /// Takes [email] and [password]. Optionally, a `onEmailNotVerified` callback can be provided
-  /// to handle cases where the email is not verified.
-  /// Returns a [String] error message if sign-in fails, otherwise returns `null` on success.
   Future<String?> signInWithEmailAndPassword({
     required String email,
     required String password,
     Function(User)? onEmailNotVerified,
   }) async {
     try {
-      // Attempt to sign in with email and password.
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Check if the user's email is verified.
       if (userCredential.user != null && !userCredential.user!.emailVerified) {
-        // If not verified, invoke the callback and sign out the user (optional, but good for forcing verification).
         onEmailNotVerified?.call(userCredential.user!);
         await _auth.signOut();
       }
-      return null; // Indicates success
+      return null;
     } on FirebaseAuthException catch (e) {
-      // Map Firebase authentication error codes to user-friendly messages.
-      String errorMessage;
-      switch (e.code) {
-        case 'user-not-found':
-          errorMessage = 'No user found for that email.';
-          break;
-        case 'wrong-password':
-          errorMessage = 'Wrong password provided for that user.';
-          break;
-        case 'invalid-email':
-          errorMessage = 'The email address is not valid.';
-          break;
-        case 'user-disabled':
-          errorMessage = 'This user account has been disabled.';
-          break;
-        case 'too-many-requests':
-          errorMessage = 'Too many sign-in attempts. Please try again later.';
-          break;
-        case 'network-request-failed':
-          errorMessage = 'Network error. Please check your internet connection.';
-          break;
-        default:
-          errorMessage = 'Sign-in failed: ${e.message}';
-      }
-      return errorMessage;
+      return _handleFirebaseAuthError(e);
     } catch (e) {
-      return 'An unexpected error occurred: $e';
+      return e.toString();
     }
   }
 
-  /// Handles email and password user registration (sign-up).
-  ///
-  /// Takes [email] and [password]. Sends an email verification link upon successful registration.
-  /// Returns a [String] error message if sign-up fails, otherwise returns `null` on success.
   Future<String?> signUpWithEmailAndPassword({
     required String email,
     required String password,
   }) async {
     try {
-      // Attempt to create a new user with email and password.
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-      // If user creation is successful, send an email verification link.
       if (userCredential.user != null) {
         await userCredential.user!.sendEmailVerification();
-        // Optionally sign out the user after sign-up to force email verification.
         await _auth.signOut();
       }
-      return null; // Indicates success
+      return null;
     } on FirebaseAuthException catch (e) {
-      // Map Firebase authentication error codes to user-friendly messages.
-      String errorMessage;
-      switch (e.code) {
-        case 'weak-password':
-          errorMessage = 'The password provided is too weak.';
-          break;
-        case 'email-already-in-use':
-          errorMessage = 'An account already exists for that email.';
-          break;
-        case 'invalid-email':
-          errorMessage = 'The email address is not valid.';
-          break;
-        case 'network-request-failed':
-          errorMessage = 'Network error. Please check your internet connection.';
-          break;
-        default:
-          errorMessage = 'Sign-up failed: ${e.message}';
-      }
-      return errorMessage;
+      return _handleFirebaseAuthError(e);
     } catch (e) {
-      return 'An unexpected error occurred: $e';
+      return e.toString();
     }
   }
 
-  /// Sends a password reset email to the provided [email].
-  ///
-  /// Returns a [String] error message if sending the reset email fails, otherwise returns `null` on success.
   Future<String?> sendPasswordResetEmail({required String email}) async {
-    // Basic validation for the email format.
     if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-      return 'Please enter a valid email to reset password.';
+      return 'Please enter a valid email.';
     }
 
     try {
-      // Send the password reset email.
       await _auth.sendPasswordResetEmail(email: email);
-      return null; // Indicates success
+      return null;
     } on FirebaseAuthException catch (e) {
-      // Map Firebase authentication error codes to user-friendly messages.
-      String errorMessage;
-      switch (e.code) {
-        case 'user-not-found':
-          errorMessage = 'No user found for that email.';
-          break;
-        case 'invalid-email':
-          errorMessage = 'The email address is not valid.';
-          break;
-        case 'network-request-failed':
-          errorMessage = 'Network error. Please check your internet connection.';
-          break;
-        default:
-          errorMessage = 'Failed to send reset email: ${e.message}';
-      }
-      return errorMessage;
+      return _handleFirebaseAuthError(e);
     } catch (e) {
-      return 'An unexpected error occurred: $e';
+      return e.toString();
     }
   }
 
-  /// Signs out the currently authenticated user from both Google and Firebase.
-  ///
-  /// Returns a [String] error message if sign-out fails, otherwise returns `null` on success.
   Future<String?> signOut() async {
     try {
-      // Attempt to sign out from Google first.
+      await _ensureGoogleInitialized();
       await _googleSignIn.signOut();
-      // Then sign out from Firebase.
       await _auth.signOut();
-      return null; // Indicates success
+      return null;
     } catch (e) {
-      return 'Sign-out failed: $e';
+      return e.toString();
+    }
+  }
+
+  String _handleFirebaseAuthError(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return 'No user found for that email.';
+      case 'wrong-password':
+        return 'Wrong password provided.';
+      case 'invalid-email':
+        return 'The email address is not valid.';
+      case 'user-disabled':
+        return 'This user account has been disabled.';
+      case 'too-many-requests':
+        return 'Too many attempts. Try again later.';
+      case 'email-already-in-use':
+        return 'An account already exists for that email.';
+      case 'weak-password':
+        return 'The password provided is too weak.';
+      default:
+        return e.message ?? 'Authentication failed.';
     }
   }
 }
